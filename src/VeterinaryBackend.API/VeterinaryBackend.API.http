@@ -1,0 +1,103 @@
+@host = http://localhost:5035
+@token = paste-jwt-here
+
+############################################################
+# AUTH (super admin)
+############################################################
+
+### Login as admin (default credentials: admin / Admin@123)
+POST {{host}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin@123"
+}
+
+############################################################
+# CONTENTS — public read
+############################################################
+
+### Get all (default language: UZ)
+GET {{host}}/api/v1/contents?page=1&pageSize=10
+
+### Get all in Russian (Accept-Language header)
+GET {{host}}/api/v1/contents?page=1&pageSize=10
+Accept-Language: ru
+
+### Get all in English (query string)
+GET {{host}}/api/v1/contents?page=1&pageSize=10&lang=en
+
+### Get one (localized)
+GET {{host}}/api/v1/contents/1
+Accept-Language: uz
+
+############################################################
+# CONTENTS — admin write (Bearer required)
+############################################################
+
+### Get full multilingual detail (admin)
+GET {{host}}/api/v1/contents/1/detail
+Authorization: Bearer {{token}}
+
+### Create — Description can be plain text, HTML or JSON string
+POST {{host}}/api/v1/contents
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "titleUz": "Veterinariya markazi",
+  "titleRu": "Ветеринарный центр",
+  "titleEn": "Veterinary center",
+  "descriptionUz": "<h2>Salom</h2><p>Bu <strong>HTML</strong> formatida tavsif.</p>",
+  "descriptionRu": "{\"type\":\"json\",\"text\":\"любой формат\"}",
+  "descriptionEn": "Plain text also works — any format you want.",
+  "imageUrl": "/uploads/2026/05/some-uploaded-file.jpg",
+  "sortOrder": 1,
+  "isActive": true
+}
+
+### Update
+PUT {{host}}/api/v1/contents/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "titleUz": "Yangilangan sarlavha",
+  "titleRu": "Обновлённый заголовок",
+  "titleEn": "Updated title",
+  "descriptionUz": "Yangilangan tavsif",
+  "descriptionRu": "Обновлённое описание",
+  "descriptionEn": "Updated description",
+  "imageUrl": "https://example.com/image.jpg",
+  "sortOrder": 2,
+  "isActive": true
+}
+
+### Delete
+DELETE {{host}}/api/v1/contents/1
+Authorization: Bearer {{token}}
+
+############################################################
+# MEDIA (admin only)
+############################################################
+
+### List uploaded files
+GET {{host}}/api/v1/media?page=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### Upload ANY file (jpg, png, pdf, xlsx, docx, json, html, zip ...)
+POST {{host}}/api/v1/media/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebFormBoundary7MA4YWxkTrZu0gW
+
+------WebFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="example.jpg"
+Content-Type: image/jpeg
+
+< ./example.jpg
+------WebFormBoundary7MA4YWxkTrZu0gW--
+
+### Delete a file (removes from disk + DB)
+DELETE {{host}}/api/v1/media/1
+Authorization: Bearer {{token}}

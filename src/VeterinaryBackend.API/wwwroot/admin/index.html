@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VetSafe Admin Panel</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'%3E%3Cpath d='M12 2L4 5v6c0 5.5 3.5 10.7 8 12 4.5-1.3 8-6.5 8-12V5l-8-3zm-1 15l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 10l-7 7z'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    // Apply theme as early as possible to avoid FOUC.
+    (function () {
+      var stored = localStorage.getItem('admin_theme');
+      var prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var dark = stored === 'dark' || (!stored && prefers);
+      if (dark) document.documentElement.classList.add('dark');
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/admin/css/style.css?v=16" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif']
+          },
+          colors: {
+            brand: {
+              50:  '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81'
+            }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="font-sans bg-slate-50 text-slate-900 antialiased min-h-screen transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100 admin-bg">
+
+  <!-- ===================== LOGIN SCREEN ===================== -->
+  <section id="login-screen" class="hidden min-h-screen items-center justify-center px-4">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-8">
+        <div class="mx-auto w-14 h-14 rounded-2xl bg-brand-600 flex items-center justify-center shadow-lg shadow-brand-600/30 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 11c0-1.657-1.343-3-3-3S6 9.343 6 11s1.343 3 3 3 3-1.343 3-3zm6 0c0-1.657-1.343-3-3-3s-3 1.343-3 3 1.343 3 3 3 3-1.343 3-3zM3 19c0-3 3-5 6-5s6 2 6 5v1H3v-1zm12 0c0-3 3-5 6-5s6 2 6 5v1h-12v-1z"/>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Admin Panel</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Tizimga kirish uchun ma'lumotlarni kiriting</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/30 border border-slate-200 dark:border-slate-800 p-8">
+        <form id="login-form" class="space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Foydalanuvchi nomi</label>
+            <input
+              type="text"
+              name="username"
+              autocomplete="username"
+              required
+              class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"
+              placeholder="admin"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Parol</label>
+            <input
+              type="password"
+              name="password"
+              autocomplete="current-password"
+              required
+              class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div id="login-error" class="hidden bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm rounded-lg px-3.5 py-2.5"></div>
+
+          <button
+            type="submit"
+            id="login-btn"
+            class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-2.5 rounded-lg transition shadow-sm shadow-brand-600/20 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <span class="login-btn-text">Kirish</span>
+            <svg class="login-btn-spinner hidden animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </button>
+        </form>
+
+        <div class="text-center mt-5">
+          <button type="button" id="forgot-password-btn" class="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium underline">
+            Parolni unutdingizmi?
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-400 dark:text-slate-500 text-center mt-6">
+          Default: <span class="font-mono text-slate-600 dark:text-slate-300">admin</span> / <span class="font-mono text-slate-600 dark:text-slate-300">Admin@123</span>
+          <br/><span class="text-amber-600 dark:text-amber-400">⚠ production'da darhol almashtiring</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== DASHBOARD ===================== -->
+  <section id="dashboard" class="hidden min-h-screen flex-col">
+    <!-- Top bar -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
+      <div class="px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button id="sidebar-toggle" class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <div class="flex items-center gap-2.5">
+            <div class="relative w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 flex items-center justify-center shadow-lg shadow-brand-600/30">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L4 5v6c0 5.5 3.5 10.7 8 12 4.5-1.3 8-6.5 8-12V5l-8-3zm-1 15l-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 10l-7 7z"/>
+              </svg>
+              <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900"></span>
+            </div>
+            <div class="flex flex-col leading-tight">
+              <span class="font-display font-bold text-base text-slate-900 dark:text-white">VetSafe</span>
+              <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Admin Panel</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <a id="back-to-site-btn" href="/" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition" title="Asosiy saytga qaytish">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span>Saytga qaytish</span>
+          </a>
+
+          <button id="theme-btn" type="button" class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" aria-label="Tun/Kun rejimi" title="Tun/Kun rejimi">
+            <svg class="theme-icon-sun hidden w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <svg class="theme-icon-moon w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </button>
+
+          <div class="relative">
+            <button id="user-menu-btn" class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white text-sm font-semibold flex items-center justify-center" id="user-initial">A</div>
+              <span class="hidden sm:inline text-sm font-medium text-slate-700 dark:text-slate-200" id="user-name">admin</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div id="user-menu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg py-1 z-40">
+              <button id="change-password-btn" class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                Parolni o'zgartirish
+              </button>
+              <div class="border-t border-slate-100 dark:border-slate-700 my-1"></div>
+              <button id="logout-btn" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+                Chiqish
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="flex-1 flex">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="hidden lg:flex w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-col py-5 px-3">
+        <div class="px-3 mb-3">
+          <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Boshqaruv</p>
+        </div>
+        <nav class="flex flex-col gap-1">
+          <button data-tab="sections" class="nav-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+            </svg>
+            Bo'limlar
+          </button>
+          <button data-tab="contents" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Kontentlar
+          </button>
+        </nav>
+
+        <div class="mt-auto px-3 py-4 border-t border-slate-100 dark:border-slate-800">
+          <div class="rounded-xl bg-gradient-to-br from-brand-50 to-emerald-50 dark:from-brand-900/30 dark:to-emerald-900/20 border border-brand-100 dark:border-brand-800/50 p-3 text-xs">
+            <div class="flex items-center gap-2 text-brand-700 dark:text-brand-300 font-semibold mb-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Sayt aktiv
+            </div>
+            <p class="text-slate-600 dark:text-slate-400">Mehmonlar saytni ko'ra olishadi</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-full overflow-x-hidden">
+
+        <!-- ====== SECTIONS TAB ====== -->
+        <div id="tab-sections" class="tab-panel">
+          <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+            <div>
+              <div class="flex items-center gap-2.5 mb-1">
+                <span class="tab-num-badge">1</span>
+                <h2 class="font-display text-3xl font-extrabold text-slate-900 dark:text-white">Bo'limlar</h2>
+              </div>
+              <p class="text-sm text-slate-500 dark:text-slate-400 ml-11">Saytdagi navigatsiya menyusi (masalan: <em>Xizmatlar, Galereya, Doktorlar</em>)</p>
+            </div>
+            <button id="new-section-btn" class="inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-brand-600/30 hover:shadow-xl hover:shadow-brand-600/40 hover:-translate-y-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              Yangi bo'lim qo'shish
+            </button>
+          </div>
+
+          <!-- Stats overview -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5" id="sections-stats">
+            <div class="stat-card stat-card-indigo">
+              <div class="stat-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+              </div>
+              <div class="stat-card-value" data-stat="sections-total">—</div>
+              <div class="stat-card-label">Jami bo'limlar</div>
+            </div>
+            <div class="stat-card stat-card-emerald">
+              <div class="stat-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <div class="stat-card-value" data-stat="sections-active">—</div>
+              <div class="stat-card-label">Faol bo'limlar</div>
+            </div>
+            <div class="stat-card stat-card-amber">
+              <div class="stat-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              </div>
+              <div class="stat-card-value" data-stat="sections-content-total">—</div>
+              <div class="stat-card-label">Jami kontentlar</div>
+            </div>
+            <div class="stat-card stat-card-rose">
+              <div class="stat-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+              </div>
+              <div class="stat-card-value" data-stat="sections-empty">—</div>
+              <div class="stat-card-label">Bo'sh bo'limlar</div>
+            </div>
+          </div>
+
+          <!-- Help banner -->
+          <div class="mb-5 flex gap-3 p-4 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="text-sm text-slate-700 dark:text-slate-300">
+              <strong class="text-slate-900 dark:text-white">Bu yerda nima qilasiz:</strong>
+              Saytdagi <strong>navigatsiya bo'limlarini</strong> yaratasiz. Har bir bo'lim — bu sayt yuqorisidagi menyu havola va sayt o'rtasidagi alohida ekran bo'ladi. Avval bo'lim yarating, keyin <span class="text-brand-700 dark:text-brand-400 font-semibold">"2. Kontentlar"</span> tabidan o'sha bo'limga rasm + matn bloklarini qo'shing.
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                <tr class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  <th class="px-4 py-3">Bo'lim nomi</th>
+                  <th class="px-4 py-3 hidden md:table-cell w-24">Tartib №</th>
+                  <th class="px-4 py-3 hidden md:table-cell w-32">Kontentlar soni</th>
+                  <th class="px-4 py-3 hidden md:table-cell w-32">Holati</th>
+                  <th class="px-4 py-3 w-32 text-right">Amallar</th>
+                </tr>
+              </thead>
+              <tbody id="sections-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr><td colspan="5" class="px-4 py-12 text-center text-slate-400 dark:text-slate-500">Yuklanmoqda...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ====== CONTENTS TAB ====== -->
+        <div id="tab-contents" class="tab-panel hidden">
+          <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+            <div>
+              <div class="flex items-center gap-2.5 mb-1">
+                <span class="tab-num-badge">2</span>
+                <h2 class="font-display text-3xl font-extrabold text-slate-900 dark:text-white">Kontentlar</h2>
+              </div>
+              <p class="text-sm text-slate-500 dark:text-slate-400 ml-11">Bo'limlar ichidagi <strong>rasm + matn bloklari</strong> — saytda navbat-navbat chiqadi</p>
+            </div>
+            <button id="new-content-btn" class="inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-brand-600/30 hover:shadow-xl hover:shadow-brand-600/40 hover:-translate-y-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              Yangi blok qo'shish (rasm + matn)
+            </button>
+          </div>
+
+          <!-- Stats overview -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+            <div class="stat-card stat-card-indigo">
+              <div class="stat-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+              </div>
+              <div class="stat-card-value" data-stat="contents-total">—</div>
+              <div class="stat-card-label">Jami bloklar</div>
+            </div>
+            <div class="stat-card stat-card-emerald">
+              <div class="stat-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div class="stat-card-value" data-stat="contents-active">—</div>
+              <div class="stat-card-label">Faol bloklar</div>
+            </div>
+            <div class="stat-card stat-card-amber">
+              <div class="stat-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+              </div>
+              <div class="stat-card-value" data-stat="contents-langs">3</div>
+              <div class="stat-card-label">Til (UZ/RU/EN)</div>
+            </div>
+            <div class="stat-card stat-card-rose">
+              <div class="stat-card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div class="stat-card-value" data-stat="contents-recent">—</div>
+              <div class="stat-card-label">Bugun yangi</div>
+            </div>
+          </div>
+
+          <!-- Help banner -->
+          <div class="mb-5 flex gap-3 p-4 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="text-sm text-slate-700 dark:text-slate-300">
+              <strong class="text-slate-900 dark:text-white">Bu yerda nima qilasiz:</strong>
+              Har bir bo'lim ichida bittadan <strong>kontent bloki</strong> yaratasiz: <em>1 ta rasm + 3 tilda sarlavha + 3 tilda tavsif</em>. Bloklar saytda <strong>tartib raqami</strong> bo'yicha chiqadi (1, 2, 3...) va chap-o'ng almashinib turadi: <span class="text-xs font-mono">[Rasm + Matn] → [Matn + Rasm] → [Rasm + Matn]</span>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div id="contents-list-wrapper" class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                  <tr class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <th class="px-4 py-3 w-20">Rasm</th>
+                    <th class="px-4 py-3">Sarlavha (UZ) + bo'lim</th>
+                    <th class="px-4 py-3 hidden md:table-cell">Tartib №</th>
+                    <th class="px-4 py-3 hidden md:table-cell">Holati</th>
+                    <th class="px-4 py-3 hidden lg:table-cell">Yaratilgan</th>
+                    <th class="px-4 py-3 w-32 text-right">Amallar</th>
+                  </tr>
+                </thead>
+                <tbody id="contents-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr><td colspan="6" class="px-4 py-12 text-center text-slate-400 dark:text-slate-500">Yuklanmoqda...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="contents-pagination" class="px-4 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm hidden">
+              <div class="text-slate-500 dark:text-slate-400" id="contents-pagination-info"></div>
+              <div class="flex gap-2">
+                <button id="contents-prev" class="px-3 py-1.5 border border-slate-300 dark:border-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed">Oldingi</button>
+                <button id="contents-next" class="px-3 py-1.5 border border-slate-300 dark:border-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed">Keyingi</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION MODAL ===================== -->
+  <div id="section-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm">
+    <div class="min-h-screen flex items-start sm:items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl my-8">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h3 id="section-modal-title" class="text-lg font-semibold text-slate-900 dark:text-white">Yangi bo'lim</h3>
+          <button class="modal-close p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="section-form" class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+          <input type="hidden" name="id" />
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Slug (URL) <span class="text-xs text-slate-400 font-normal">— bo'sh qoldirsangiz avtomatik yaratiladi</span></label>
+            <input type="text" name="slug" pattern="[a-z0-9-]*" placeholder="services" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm font-mono" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Nomi (UZ) <span class="text-rose-500">*</span></label>
+            <input type="text" name="titleUz" required maxlength="200" placeholder="Masalan: Xizmatlar" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+
+          <!-- RU/EN translations are still supported via the API but hidden from the simplified UI. -->
+          <input type="hidden" name="titleRu" value="" />
+          <input type="hidden" name="titleEn" value="" />
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Tartib raqami</label>
+            <input type="number" name="sortOrder" min="0" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">💡 Kichik raqam — saytda <strong>chap tomonda</strong> chiqadi (1, 2, 3 ...)</p>
+          </div>
+
+          <!-- Sections are always active by default; toggle hidden from the simplified UI. -->
+          <input type="hidden" name="isActive" value="on" />
+
+          <div id="section-form-error" class="hidden bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm rounded-lg px-3.5 py-2.5"></div>
+        </form>
+
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+          <button type="button" class="modal-close px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Bekor qilish</button>
+          <button type="button" id="section-save-btn" class="px-4 py-2 text-sm bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow-sm shadow-brand-600/20 disabled:opacity-60 flex items-center gap-2">
+            <span class="save-btn-text">Saqlash</span>
+            <svg class="save-btn-spinner hidden animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== CONTENT MODAL ===================== -->
+  <div id="content-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm">
+    <div class="min-h-screen flex items-start sm:items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl my-8">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h3 id="content-modal-title" class="text-lg font-semibold text-slate-900 dark:text-white">Yangi kontent</h3>
+          <button class="modal-close p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <form id="content-form" class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+          <input type="hidden" name="id" />
+
+          <!-- Section selector -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Bo'lim <span class="text-rose-500">*</span></label>
+            <select name="sectionId" required class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm bg-white">
+              <option value="">— Bo'lim tanlang —</option>
+            </select>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Bu blok qaysi bo'limga tegishli? Bo'lim ro'yxatda yo'q bo'lsa <button type="button" id="content-jump-to-sections" class="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 underline">avval bo'lim yarating</button>.</p>
+          </div>
+
+          <!-- Cover image is auto-derived from first image block; field stays hidden -->
+          <input type="hidden" name="imageUrl" />
+
+          <!-- Language tabs (titles only) -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">📝 Sarlavha (3 tilda to'ldiring)</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400" id="lang-fill-status">0/3 til to'ldirilgan</div>
+            </div>
+            <div class="flex gap-1 border-b border-slate-200 dark:border-slate-700 mb-3">
+              <button type="button" class="lang-tab active" data-lang="Uz">🇺🇿 O'zbek<span class="lang-tab-dot hidden" data-dot="Uz"></span></button>
+              <button type="button" class="lang-tab" data-lang="Ru">🇷🇺 Русский<span class="lang-tab-dot hidden" data-dot="Ru"></span></button>
+              <button type="button" class="lang-tab" data-lang="En">🇬🇧 English<span class="lang-tab-dot hidden" data-dot="En"></span></button>
+            </div>
+
+            <div class="lang-pane" data-lang="Uz">
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Sarlavha (UZ) <span class="text-rose-500">*</span></label>
+              <input type="text" name="titleUz" required class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+            </div>
+
+            <div class="lang-pane hidden" data-lang="Ru">
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Заголовок (RU) <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+              <input type="text" name="titleRu" placeholder="Bo'sh qoldirsangiz, UZ matni ishlatiladi" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+            </div>
+
+            <div class="lang-pane hidden" data-lang="En">
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Title (EN) <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— optional</span></label>
+              <input type="text" name="titleEn" placeholder="If left empty, the UZ title is used" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+            </div>
+          </div>
+
+          <!-- Multi-block body editor (text/image blocks, ordered) -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">🧩 Bloklar (matn va rasmlar — istalgan tartibda)</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400" id="blocks-count">0 ta blok</div>
+            </div>
+            <div id="blocks-list" class="space-y-3 mb-3"></div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" id="add-text-block-btn" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-sm font-semibold rounded-lg border border-brand-200 dark:border-brand-800 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                <span>Matn qo'shish</span>
+              </button>
+              <button type="button" id="add-image-block-btn" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-warm-50 dark:bg-warm-700/20 hover:bg-warm-100 dark:hover:bg-warm-700/40 text-warm-700 dark:text-warm-400 text-sm font-semibold rounded-lg border border-warm-200 dark:border-warm-700 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                <span>Rasm qo'shish</span>
+              </button>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">💡 Matn bloklari har 3 tilda to'ldiriladi. Rasm bloklari barcha tillar uchun bir xil bo'ladi. Bloklarni tartibini o'zgartiring va chiqaring kerakli ko'rinishni.</p>
+          </div>
+
+          <!-- imagePosition is no longer user-selectable; default 'top' is sent to keep backend contract intact -->
+          <input type="hidden" name="imagePosition" value="top" />
+
+          <!-- Sort + active -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Tartib raqami</label>
+              <input type="number" name="sortOrder" min="0" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">💡 1, 2, 3... — bo'lim ichida <strong>tepadan pastga</strong> tartib</p>
+            </div>
+            <div class="flex items-start pt-1">
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="isActive" checked class="w-5 h-5 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-slate-600 dark:bg-slate-700" />
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Faol (saytda chiqsin)</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="content-form-error" class="hidden bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm rounded-lg px-3.5 py-2.5"></div>
+        </form>
+
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+          <button type="button" class="modal-close px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Bekor qilish</button>
+          <button type="button" id="content-save-btn" class="px-4 py-2 text-sm bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow-sm shadow-brand-600/20 disabled:opacity-60 flex items-center gap-2">
+            <span class="save-btn-text">Saqlash</span>
+            <svg class="save-btn-spinner hidden animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MEDIA PICKER MODAL ===================== -->
+  <div id="media-picker-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm">
+    <div class="min-h-screen flex items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl my-8">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Mediadan rasm tanlang</h3>
+          <button class="picker-close p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="p-6 max-h-[70vh] overflow-y-auto">
+          <div id="media-picker-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+            <div class="col-span-full text-center text-slate-400 dark:text-slate-500 py-12">Yuklanmoqda...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== CHANGE PASSWORD MODAL ===================== -->
+  <div id="change-password-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm">
+    <div class="min-h-screen flex items-start sm:items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md my-8">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">🔒 Parolni o'zgartirish</h3>
+          <button class="cp-close p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="change-password-form" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Joriy parol <span class="text-rose-500">*</span></label>
+            <input type="password" name="currentPassword" required autocomplete="current-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Yangi parol <span class="text-rose-500">*</span></label>
+            <input type="password" name="newPassword" required minlength="6" autocomplete="new-password" placeholder="Kamida 6 ta belgi" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Yangi parolni qaytaring <span class="text-rose-500">*</span></label>
+            <input type="password" name="confirmPassword" required minlength="6" autocomplete="new-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+          <div id="cp-error" class="hidden bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm rounded-lg px-3.5 py-2.5"></div>
+        </form>
+
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+          <button type="button" class="cp-close px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Bekor qilish</button>
+          <button type="button" id="cp-save-btn" class="px-4 py-2 text-sm bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow-sm shadow-brand-600/20 disabled:opacity-60 flex items-center gap-2">
+            <span class="cp-text">O'zgartirish</span>
+            <svg class="cp-spinner hidden animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== RESET PASSWORD MODAL (forgot password) ===================== -->
+  <div id="reset-password-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm">
+    <div class="min-h-screen flex items-start sm:items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md my-8">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-white">🔑 Parolni tiklash</h3>
+          <button class="rp-close p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="reset-password-form" class="p-6 space-y-4">
+          <div class="flex gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <div>
+              <strong class="block">Tiklash kaliti kerak</strong>
+              <span class="text-xs">Tiklash kaliti server administratorida — <code class="bg-amber-100 dark:bg-amber-900/40 px-1 py-0.5 rounded">appsettings.json</code> faylidagi <code>Admin:RecoveryKey</code> qiymati.</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Tiklash kaliti <span class="text-rose-500">*</span></label>
+            <input type="text" name="recoveryKey" required placeholder="Server administratoridan oling" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm font-mono" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Yangi parol <span class="text-rose-500">*</span></label>
+            <input type="password" name="newPassword" required minlength="6" autocomplete="new-password" placeholder="Kamida 6 ta belgi" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Yangi parolni qaytaring <span class="text-rose-500">*</span></label>
+            <input type="password" name="confirmPassword" required minlength="6" autocomplete="new-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+          <div id="rp-error" class="hidden bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm rounded-lg px-3.5 py-2.5"></div>
+        </form>
+
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+          <button type="button" class="rp-close px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Bekor qilish</button>
+          <button type="button" id="rp-save-btn" class="px-4 py-2 text-sm bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow-sm shadow-brand-600/20 disabled:opacity-60 flex items-center gap-2">
+            <span class="rp-text">Tiklash</span>
+            <svg class="rp-spinner hidden animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== CONFIRM MODAL ===================== -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-md p-6">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center flex-shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 id="confirm-title" class="text-base font-semibold text-slate-900 dark:text-white">Tasdiqlash</h3>
+          <p id="confirm-message" class="text-sm text-slate-600 dark:text-slate-300 mt-1"></p>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6 justify-end">
+        <button id="confirm-cancel" class="px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Bekor qilish</button>
+        <button id="confirm-ok" class="px-4 py-2 text-sm bg-rose-600 hover:bg-rose-700 text-white rounded-lg">O'chirish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TOAST CONTAINER ===================== -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-sm"></div>
+
+  <!-- App scripts -->
+  <script src="/admin/js/api.js?v=16"></script>
+  <script src="/admin/js/ui.js?v=16"></script>
+  <script src="/admin/js/auth.js?v=16"></script>
+  <script src="/admin/js/sections.js?v=16"></script>
+  <script src="/admin/js/contents.js?v=16"></script>
+  <script src="/admin/js/media.js?v=16"></script>
+  <script src="/admin/js/app.js?v=16"></script>
+</body>
+</html>

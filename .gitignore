@@ -1,0 +1,44 @@
+## .NET / VS
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+.vs/
+.vscode/
+.idea/
+
+## Build & restore
+*.dll
+*.pdb
+*.exe
+*.cache
+
+## Logs
+*.log
+
+## Env / secrets
+.env
+.env.*
+appsettings.json
+appsettings.Local.json
+appsettings.Production.json
+secrets.json
+
+## User-uploaded media (runtime data, not source)
+src/VeterinaryBackend.API/wwwroot/uploads/
+
+## Solution caches
+*.sln.cache
+
+## Rider
+.idea/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Claude agent config
+.claude/
