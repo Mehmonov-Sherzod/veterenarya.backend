@@ -142,6 +142,23 @@ const Api = {
   },
   deleteMedia(id) {
     return this.request(`/media/${id}`, { method: 'DELETE' });
+  },
+
+  // Lab heads
+  listLabHeads({ onlyActive = false } = {}) {
+    return this.request(`/lab-heads?onlyActive=${onlyActive}`);
+  },
+  getLabHead(id) {
+    return this.request(`/lab-heads/${id}`);
+  },
+  createLabHead(data) {
+    return this.request('/lab-heads', { method: 'POST', body: data });
+  },
+  updateLabHead(id, data) {
+    return this.request(`/lab-heads/${id}`, { method: 'PUT', body: data });
+  },
+  deleteLabHead(id) {
+    return this.request(`/lab-heads/${id}`, { method: 'DELETE' });
   }
 };
 

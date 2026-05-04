@@ -7,6 +7,7 @@ const App = {
     Sections.init();
     Contents.init();
     Media.init();
+    LabHeads.init();
     this.bindThemeToggle();
 
     document.querySelectorAll('[data-tab]').forEach(b =>
@@ -19,12 +20,13 @@ const App = {
 
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
-      const order = ['media-picker-modal', 'change-password-modal', 'reset-password-modal', 'content-modal', 'section-modal'];
+      const order = ['media-picker-modal', 'change-password-modal', 'reset-password-modal', 'content-modal', 'section-modal', 'lab-head-modal'];
       for (const id of order) {
         const m = document.getElementById(id);
         if (m && !m.classList.contains('hidden')) {
           if (id === 'content-modal') Contents.closeModal();
           else if (id === 'section-modal') Sections.closeModal();
+          else if (id === 'lab-head-modal') LabHeads.closeModal();
           else m.classList.add('hidden');
           return;
         }
@@ -72,6 +74,7 @@ const App = {
     if (tab === 'sections') Sections.load();
     if (tab === 'contents') Contents.load();
     if (tab === 'media') Media.load();
+    if (tab === 'lab-heads') LabHeads.load();
   }
 };
 

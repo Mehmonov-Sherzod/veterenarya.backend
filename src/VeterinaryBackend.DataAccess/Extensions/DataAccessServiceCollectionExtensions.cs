@@ -18,6 +18,7 @@ public static class DataAccessServiceCollectionExtensions
         services.AddScoped<ISectionRepository, SectionRepository>();
         services.AddScoped<IContentRepository, ContentRepository>();
         services.AddScoped<IMediaFileRepository, MediaFileRepository>();
+        services.AddScoped<ILabHeadRepository, LabHeadRepository>();
         services.AddScoped<UnitOfWorkNs.IUnitOfWork, UnitOfWorkNs.UnitOfWork>();
 
         return services;
