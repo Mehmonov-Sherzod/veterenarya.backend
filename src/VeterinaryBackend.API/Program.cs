@@ -19,6 +19,7 @@ var jwtOptions = jwtSection.Get<JwtOptions>()
     ?? throw new InvalidOperationException("Jwt section is missing from configuration.");
 
 if (string.IsNullOrWhiteSpace(jwtOptions.SecretKey))
+
     throw new InvalidOperationException("Jwt:SecretKey is not configured.");
 
 builder.Services
