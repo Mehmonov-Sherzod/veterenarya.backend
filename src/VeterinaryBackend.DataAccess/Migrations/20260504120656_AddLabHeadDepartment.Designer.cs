@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VeterinaryBackend.DataAccess.Context;
@@ -11,9 +12,11 @@ using VeterinaryBackend.DataAccess.Context;
 namespace VeterinaryBackend.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504120656_AddLabHeadDepartment")]
+    partial class AddLabHeadDepartment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -227,9 +230,6 @@ namespace VeterinaryBackend.DataAccess.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
-                    b.Property<int?>("ParentId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(120)
@@ -262,8 +262,6 @@ namespace VeterinaryBackend.DataAccess.Migrations
 
                     b.HasIndex("IsActive");
 
-                    b.HasIndex("ParentId");
-
                     b.HasIndex("Slug")
                         .IsUnique();
 
@@ -284,18 +282,6 @@ namespace VeterinaryBackend.DataAccess.Migrations
 
             modelBuilder.Entity("VeterinaryBackend.Domain.Entities.Section", b =>
                 {
-                    b.HasOne("VeterinaryBackend.Domain.Entities.Section", "Parent")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("VeterinaryBackend.Domain.Entities.Section", b =>
-                {
-                    b.Navigation("Children");
-
                     b.Navigation("Contents");
                 });
 #pragma warning restore 612, 618

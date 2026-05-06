@@ -8,4 +8,5 @@ public class UpdateSectionDto
     public string TitleEn { get; set; } = string.Empty;
     public int SortOrder { get; set; }
     public bool IsActive { get; set; }
+    public int? ParentId { get; set; }
 }

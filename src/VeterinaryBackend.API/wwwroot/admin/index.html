@@ -467,6 +467,14 @@
           <input type="hidden" name="titleEn" value="" />
 
           <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Ota bo'lim <span class="text-xs text-slate-400 font-normal">— tanlanmasa, asosiy bo'lim sifatida ochiladi</span></label>
+            <select name="parentId" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm bg-white">
+              <option value="">— Yo'q (asosiy bo'lim) —</option>
+            </select>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">📁 Boshqa bo'limni tanlasangiz, bu bo'lim shu otaning ichida (sub-bo'lim) bo'ladi.</p>
+          </div>
+
+          <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Tartib raqami</label>
             <input type="number" name="sortOrder" min="0" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">💡 Kichik raqam — saytda <strong>chap tomonda</strong> chiqadi (1, 2, 3 ...)</p>
@@ -643,6 +651,12 @@
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Ism Familiya <span class="text-rose-500">*</span></label>
             <input type="text" name="fullName" required maxlength="200" placeholder="Karimov Akbar Jamshidovich" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Bo'lim nomi <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+            <input type="text" name="department" maxlength="200" placeholder="Masalan: Mikrobiologiya bo'limi" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Boshliq qaysi laboratoriya bo'limiga rahbarlik qiladi</p>
           </div>
 
           <div>
@@ -825,10 +839,10 @@
   <script src="/admin/js/api.js?v=16"></script>
   <script src="/admin/js/ui.js?v=16"></script>
   <script src="/admin/js/auth.js?v=16"></script>
-  <script src="/admin/js/sections.js?v=16"></script>
+  <script src="/admin/js/sections.js?v=19"></script>
   <script src="/admin/js/contents.js?v=16"></script>
   <script src="/admin/js/media.js?v=16"></script>
-  <script src="/admin/js/lab-heads.js?v=17"></script>
+  <script src="/admin/js/lab-heads.js?v=18"></script>
   <script src="/admin/js/app.js?v=17"></script>
 </body>
 </html>

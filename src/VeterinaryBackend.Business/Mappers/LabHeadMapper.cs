@@ -14,6 +14,7 @@ public static class LabHeadMapper
             Phone = entity.Phone,
             ReceptionHours = entity.ReceptionHours,
             PhotoUrl = entity.PhotoUrl,
+            Department = entity.Department,
             SortOrder = entity.SortOrder,
             IsActive = entity.IsActive,
             CreatedAt = entity.CreatedAt,
@@ -29,6 +30,7 @@ public static class LabHeadMapper
             Phone = dto.Phone.Trim(),
             ReceptionHours = dto.ReceptionHours.Trim(),
             PhotoUrl = string.IsNullOrWhiteSpace(dto.PhotoUrl) ? null : dto.PhotoUrl.Trim(),
+            Department = string.IsNullOrWhiteSpace(dto.Department) ? null : dto.Department.Trim(),
             SortOrder = dto.SortOrder,
             IsActive = dto.IsActive
         };
@@ -40,6 +42,7 @@ public static class LabHeadMapper
         entity.Phone = dto.Phone.Trim();
         entity.ReceptionHours = dto.ReceptionHours.Trim();
         entity.PhotoUrl = string.IsNullOrWhiteSpace(dto.PhotoUrl) ? null : dto.PhotoUrl.Trim();
+        entity.Department = string.IsNullOrWhiteSpace(dto.Department) ? null : dto.Department.Trim();
         entity.SortOrder = dto.SortOrder;
         entity.IsActive = dto.IsActive;
     }

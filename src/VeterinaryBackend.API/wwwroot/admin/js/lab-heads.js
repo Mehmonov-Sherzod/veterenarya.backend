@@ -55,6 +55,7 @@ const LabHeads = {
           <td class="px-4 py-3">${photoCell}</td>
           <td class="px-4 py-3">
             <div class="font-display font-bold text-slate-900 dark:text-white">${escapeHtml(h.fullName)}</div>
+            ${h.department ? `<div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${escapeHtml(h.department)}</div>` : ''}
           </td>
           <td class="px-4 py-3 hidden md:table-cell text-sm text-slate-700 dark:text-slate-300 font-mono">${escapeHtml(h.phone)}</td>
           <td class="px-4 py-3 hidden lg:table-cell text-sm text-slate-700 dark:text-slate-300">${escapeHtml(h.receptionHours)}</td>
@@ -104,6 +105,7 @@ const LabHeads = {
       try {
         const detail = await Api.getLabHead(id);
         form.querySelector('[name="fullName"]').value = detail.fullName || '';
+        form.querySelector('[name="department"]').value = detail.department || '';
         form.querySelector('[name="phone"]').value = detail.phone || '';
         form.querySelector('[name="receptionHours"]').value = detail.receptionHours || '';
         form.querySelector('[name="sortOrder"]').value = detail.sortOrder ?? 0;
@@ -177,11 +179,13 @@ const LabHeads = {
     const fd = new FormData(form);
     const id = fd.get('id');
     const photoUrl = (fd.get('photoUrl') || '').trim();
+    const department = (fd.get('department') || '').trim();
     const payload = {
       fullName: fd.get('fullName').trim(),
       phone: fd.get('phone').trim(),
       receptionHours: fd.get('receptionHours').trim(),
       photoUrl: photoUrl || null,
+      department: department || null,
       sortOrder: parseInt(fd.get('sortOrder'), 10) || 0,
       isActive: fd.get('isActive') === 'on'
     };

@@ -16,6 +16,7 @@ public class LabHeadConfiguration : IEntityTypeConfiguration<LabHead>
         builder.Property(x => x.Phone).IsRequired().HasMaxLength(50);
         builder.Property(x => x.ReceptionHours).IsRequired().HasMaxLength(200);
         builder.Property(x => x.PhotoUrl).HasMaxLength(500);
+        builder.Property(x => x.Department).HasMaxLength(200);
 
         builder.Property(x => x.SortOrder).HasDefaultValue(0);
         builder.Property(x => x.IsActive).HasDefaultValue(true);

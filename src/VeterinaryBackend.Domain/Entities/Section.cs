@@ -13,5 +13,9 @@ public class Section : BaseEntity
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;
 
+    public int? ParentId { get; set; }
+    public Section? Parent { get; set; }
+    public ICollection<Section> Children { get; set; } = new List<Section>();
+
     public ICollection<Content> Contents { get; set; } = new List<Content>();
 }

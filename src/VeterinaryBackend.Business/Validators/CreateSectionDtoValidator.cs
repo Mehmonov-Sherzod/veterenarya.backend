@@ -16,5 +16,8 @@ public class CreateSectionDtoValidator : AbstractValidator<CreateSectionDto>
             .Matches("^[a-z0-9-]*$").WithMessage("Slug only allows lowercase a-z, 0-9, hyphens.")
             .When(x => !string.IsNullOrWhiteSpace(x.Slug));
         RuleFor(x => x.SortOrder).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.ParentId)
+            .GreaterThan(0).WithMessage("ParentId must be a positive section id.")
+            .When(x => x.ParentId.HasValue);
     }
 }

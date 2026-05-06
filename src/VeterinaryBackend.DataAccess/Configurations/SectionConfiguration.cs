@@ -25,10 +25,18 @@ public class SectionConfiguration : IEntityTypeConfiguration<Section>
 
         builder.HasIndex(x => x.SortOrder);
         builder.HasIndex(x => x.IsActive);
+        builder.HasIndex(x => x.ParentId);
 
         builder.HasMany(x => x.Contents)
             .WithOne(c => c.Section)
             .HasForeignKey(c => c.SectionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Self-reference: a section may belong to a parent section. Restrict deletion so a parent
+        // with active children cannot be silently removed — the service layer surfaces a clear error.
+        builder.HasOne(x => x.Parent)
+            .WithMany(x => x.Children)
+            .HasForeignKey(x => x.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -19,7 +19,7 @@ public class SectionsController : ControllerBase
         _sectionService = sectionService;
     }
 
-    /// <summary>Returns the full list of sections (localized) — public.</summary>
+    /// <summary>Returns the full flat list of sections (localized) with ParentId — public.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<SectionDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<SectionDto>>> GetAll(
@@ -28,6 +28,18 @@ public class SectionsController : ControllerBase
     {
         var language = LanguageMiddleware.GetLanguage(HttpContext);
         var result = await _sectionService.GetAllAsync(language, onlyActive, ct);
+        return Ok(result);
+    }
+
+    /// <summary>Returns root sections with their nested children populated — public.</summary>
+    [HttpGet("tree")]
+    [ProducesResponseType(typeof(IReadOnlyList<SectionDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<SectionDto>>> GetTree(
+        [FromQuery] bool onlyActive = true,
+        CancellationToken ct = default)
+    {
+        var language = LanguageMiddleware.GetLanguage(HttpContext);
+        var result = await _sectionService.GetTreeAsync(language, onlyActive, ct);
         return Ok(result);
     }
 
@@ -40,6 +52,18 @@ public class SectionsController : ControllerBase
     {
         var language = LanguageMiddleware.GetLanguage(HttpContext);
         var result = await _sectionService.GetAllWithContentsAsync(language, onlyActive, ct);
+        return Ok(result);
+    }
+
+    /// <summary>Returns root sections (with their content blocks) and a nested children tree — public.</summary>
+    [HttpGet("with-contents/tree")]
+    [ProducesResponseType(typeof(IReadOnlyList<SectionWithContentsDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<SectionWithContentsDto>>> GetTreeWithContents(
+        [FromQuery] bool onlyActive = true,
+        CancellationToken ct = default)
+    {
+        var language = LanguageMiddleware.GetLanguage(HttpContext);
+        var result = await _sectionService.GetTreeWithContentsAsync(language, onlyActive, ct);
         return Ok(result);
     }
 
@@ -89,6 +113,7 @@ public class SectionsController : ControllerBase
     [HttpDelete("{id:int}")]
     [Authorize(Roles = AppRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct = default)
