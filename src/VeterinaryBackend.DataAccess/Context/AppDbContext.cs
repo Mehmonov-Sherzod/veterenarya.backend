@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Content> Contents => Set<Content>();
     public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
     public DbSet<LabHead> LabHeads => Set<LabHead>();
+    public DbSet<SectionHead> SectionHeads => Set<SectionHead>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

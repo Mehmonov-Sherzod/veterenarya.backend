@@ -1,22 +1,21 @@
-using VeterinaryBackend.Business.DTOs.LabHead;
+using VeterinaryBackend.Business.DTOs.SectionHead;
 using VeterinaryBackend.Domain.Common;
 using VeterinaryBackend.Domain.Entities;
 
 namespace VeterinaryBackend.Business.Mappers;
 
-public static class LabHeadMapper
+public static class SectionHeadMapper
 {
-    public static LabHeadDto ToDto(this LabHead entity, Language language = Language.Uz)
+    public static SectionHeadDto ToDto(this SectionHead entity, Language language = Language.Uz)
     {
-        return new LabHeadDto
+        return new SectionHeadDto
         {
             Id = entity.Id,
             FullName = entity.FullName,
             Phone = entity.Phone,
             Email = entity.Email,
-            ReceptionHours = entity.ReceptionHours,
+            WorkingHours = entity.WorkingHours,
             PhotoUrl = entity.PhotoUrl,
-            Department = entity.Department,
             SectionId = entity.SectionId,
             SectionTitle = entity.Section is null ? null : PickSectionTitle(entity.Section, language),
             SortOrder = entity.SortOrder,
@@ -26,30 +25,28 @@ public static class LabHeadMapper
         };
     }
 
-    public static LabHead ToEntity(this CreateLabHeadDto dto)
+    public static SectionHead ToEntity(this CreateSectionHeadDto dto)
     {
-        return new LabHead
+        return new SectionHead
         {
             FullName = dto.FullName.Trim(),
             Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim(),
             Email = string.IsNullOrWhiteSpace(dto.Email) ? null : dto.Email.Trim(),
-            ReceptionHours = string.IsNullOrWhiteSpace(dto.ReceptionHours) ? null : dto.ReceptionHours.Trim(),
+            WorkingHours = string.IsNullOrWhiteSpace(dto.WorkingHours) ? null : dto.WorkingHours.Trim(),
             PhotoUrl = string.IsNullOrWhiteSpace(dto.PhotoUrl) ? null : dto.PhotoUrl.Trim(),
-            Department = string.IsNullOrWhiteSpace(dto.Department) ? null : dto.Department.Trim(),
             SectionId = dto.SectionId,
             SortOrder = dto.SortOrder,
             IsActive = dto.IsActive
         };
     }
 
-    public static void ApplyTo(this UpdateLabHeadDto dto, LabHead entity)
+    public static void ApplyTo(this UpdateSectionHeadDto dto, SectionHead entity)
     {
         entity.FullName = dto.FullName.Trim();
         entity.Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim();
         entity.Email = string.IsNullOrWhiteSpace(dto.Email) ? null : dto.Email.Trim();
-        entity.ReceptionHours = string.IsNullOrWhiteSpace(dto.ReceptionHours) ? null : dto.ReceptionHours.Trim();
+        entity.WorkingHours = string.IsNullOrWhiteSpace(dto.WorkingHours) ? null : dto.WorkingHours.Trim();
         entity.PhotoUrl = string.IsNullOrWhiteSpace(dto.PhotoUrl) ? null : dto.PhotoUrl.Trim();
-        entity.Department = string.IsNullOrWhiteSpace(dto.Department) ? null : dto.Department.Trim();
         entity.SectionId = dto.SectionId;
         entity.SortOrder = dto.SortOrder;
         entity.IsActive = dto.IsActive;

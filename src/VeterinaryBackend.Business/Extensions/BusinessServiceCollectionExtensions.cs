@@ -23,6 +23,7 @@ public static class BusinessServiceCollectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddScoped<ILabHeadService, LabHeadService>();
+        services.AddScoped<ISectionHeadService, SectionHeadService>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
 

@@ -159,6 +159,27 @@ const Api = {
   },
   deleteLabHead(id) {
     return this.request(`/lab-heads/${id}`, { method: 'DELETE' });
+  },
+
+  // Section heads (Bo'lim raxbarlari) — separate model from LabHead. Always
+  // attached to a dynamic section, surfaces on that section's public page.
+  listSectionHeads({ onlyActive = false } = {}) {
+    return this.request(`/section-heads?onlyActive=${onlyActive}`);
+  },
+  getSectionHead(id) {
+    return this.request(`/section-heads/${id}`);
+  },
+  getSectionHeadBySection(sectionId, { onlyActive = false } = {}) {
+    return this.request(`/section-heads?onlyActive=${onlyActive}&sectionId=${sectionId}`);
+  },
+  createSectionHead(data) {
+    return this.request('/section-heads', { method: 'POST', body: data });
+  },
+  updateSectionHead(id, data) {
+    return this.request(`/section-heads/${id}`, { method: 'PUT', body: data });
+  },
+  deleteSectionHead(id) {
+    return this.request(`/section-heads/${id}`, { method: 'DELETE' });
   }
 };
 

@@ -3,6 +3,10 @@
 // in depth-first order so children sit visually under their parent.
 const Sections = {
   cache: [],
+  // Existing head linked to the currently-edited section (null when creating, or
+  // when the section has no head yet). Used to decide whether the inline
+  // "section head" sub-form should issue a create or update on save.
+  currentHead: null,
 
   init() {
     document.getElementById('new-section-btn').addEventListener('click', () => this.openModal());
@@ -12,6 +16,16 @@ const Sections = {
       if (e.target.id === 'section-modal') this.closeModal();
     });
     document.getElementById('section-save-btn').addEventListener('click', () => this.save());
+
+    // Section-head sub-form: photo upload + remove
+    const photoPick = document.getElementById('sh-photo-pick');
+    const photoInput = document.getElementById('sh-photo-input');
+    const photoRemove = document.getElementById('sh-photo-remove');
+    if (photoPick && photoInput) {
+      photoPick.addEventListener('click', () => photoInput.click());
+      photoInput.addEventListener('change', (e) => this.handleHeadPhotoUpload(e));
+    }
+    if (photoRemove) photoRemove.addEventListener('click', () => this.clearHeadPhoto());
   },
 
   async load() {
@@ -230,6 +244,7 @@ const Sections = {
     form.querySelector('[name="sortOrder"]').value = 0;
 
     this.populateParentDropdown(id);
+    this.resetHeadForm();
 
     document.getElementById('section-modal').classList.remove('hidden');
 
@@ -245,6 +260,8 @@ const Sections = {
           if (el.type === 'checkbox') el.checked = !!v;
           else el.value = v ?? '';
         });
+        // Look up the section's existing head (if any) and prefill the sub-form.
+        await this.loadHeadForSection(id);
       } catch (err) {
         UI.toast(err.message || 'Bo\'lim yuklanmadi', 'error');
         this.closeModal();
@@ -256,6 +273,124 @@ const Sections = {
 
   closeModal() {
     document.getElementById('section-modal').classList.add('hidden');
+  },
+
+  /**
+   * Reset the inline "section head" sub-form to a fresh empty state.
+   * Called when opening the modal for a new section, or after the
+   * current head reference is no longer relevant.
+   */
+  resetHeadForm() {
+    const form = document.getElementById('section-form');
+    if (!form) return;
+    ['sectionHeadId', 'sectionHeadPhotoUrl', 'sectionHeadFullName',
+     'sectionHeadDepartment', 'sectionHeadPhone', 'sectionHeadEmail',
+     'sectionHeadReceptionHours']
+      .forEach(name => {
+        const el = form.querySelector(`[name="${name}"]`);
+        if (el) el.value = '';
+      });
+    this.currentHead = null;
+    this.clearHeadPhoto();
+    this.updateHeadStatusBadge(null);
+  },
+
+  /**
+   * Fetch the SectionHead linked to this section (new dedicated model — separate
+   * from LabHead). Prefills the inline sub-form so the section editor can keep
+   * a head record in sync without leaving the modal.
+   */
+  async loadHeadForSection(sectionId) {
+    try {
+      const list = await Api.request(`/section-heads?onlyActive=false&sectionId=${sectionId}`);
+      const head = Array.isArray(list) && list.length > 0 ? list[0] : null;
+      if (!head) {
+        this.currentHead = null;
+        this.updateHeadStatusBadge('none');
+        return;
+      }
+      this.currentHead = head;
+      const form = document.getElementById('section-form');
+      form.querySelector('[name="sectionHeadId"]').value = head.id;
+      form.querySelector('[name="sectionHeadFullName"]').value = head.fullName || '';
+      const deptField = form.querySelector('[name="sectionHeadDepartment"]');
+      if (deptField) deptField.value = '';
+      form.querySelector('[name="sectionHeadPhone"]').value = head.phone || '';
+      const emailInput = form.querySelector('[name="sectionHeadEmail"]');
+      if (emailInput) emailInput.value = head.email || '';
+      form.querySelector('[name="sectionHeadReceptionHours"]').value = head.workingHours || '';
+      if (head.photoUrl) this.setHeadPhoto(head.photoUrl);
+      this.updateHeadStatusBadge('linked');
+    } catch (err) {
+      console.warn('Section head lookup failed:', err.message);
+      this.currentHead = null;
+      this.updateHeadStatusBadge(null);
+    }
+  },
+
+  updateHeadStatusBadge(state) {
+    const badge = document.getElementById('sh-status-badge');
+    if (!badge) return;
+    badge.classList.add('hidden');
+    badge.classList.remove('bg-emerald-50', 'text-emerald-700', 'bg-slate-100', 'text-slate-600',
+      'dark:bg-emerald-900/40', 'dark:text-emerald-300', 'dark:bg-slate-800', 'dark:text-slate-400');
+    if (state === 'linked') {
+      badge.textContent = 'Biriktirilgan';
+      badge.classList.remove('hidden');
+      badge.classList.add('bg-emerald-50', 'text-emerald-700', 'dark:bg-emerald-900/40', 'dark:text-emerald-300');
+    } else if (state === 'none') {
+      badge.textContent = 'Yo\'q';
+      badge.classList.remove('hidden');
+      badge.classList.add('bg-slate-100', 'text-slate-600', 'dark:bg-slate-800', 'dark:text-slate-400');
+    }
+  },
+
+  setHeadPhoto(url) {
+    const form = document.getElementById('section-form');
+    const preview = document.getElementById('sh-photo-preview');
+    const removeBtn = document.getElementById('sh-photo-remove');
+    if (!form || !preview) return;
+    form.querySelector('[name="sectionHeadPhotoUrl"]').value = url;
+    preview.innerHTML = `<img src="${escapeHtml(url)}" alt="" class="w-full h-full object-cover" />`;
+    if (removeBtn) removeBtn.classList.remove('hidden');
+  },
+
+  clearHeadPhoto() {
+    const form = document.getElementById('section-form');
+    const preview = document.getElementById('sh-photo-preview');
+    const removeBtn = document.getElementById('sh-photo-remove');
+    const input = document.getElementById('sh-photo-input');
+    if (form) {
+      const f = form.querySelector('[name="sectionHeadPhotoUrl"]');
+      if (f) f.value = '';
+    }
+    if (preview) preview.innerHTML = '<span>Rasm yo\'q</span>';
+    if (removeBtn) removeBtn.classList.add('hidden');
+    if (input) input.value = '';
+  },
+
+  async handleHeadPhotoUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const pickBtn = document.getElementById('sh-photo-pick');
+    const original = pickBtn ? pickBtn.innerHTML : '';
+    if (pickBtn) {
+      pickBtn.disabled = true;
+      pickBtn.innerHTML = '<svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>';
+    }
+    try {
+      const dto = await Api.uploadMedia(file);
+      this.setHeadPhoto(dto.url);
+      UI.toast('Rasm yuklandi', 'success');
+    } catch (err) {
+      UI.toast(err.message || 'Rasm yuklanmadi', 'error');
+    } finally {
+      if (pickBtn) {
+        pickBtn.disabled = false;
+        pickBtn.innerHTML = original;
+      }
+      e.target.value = '';
+    }
   },
 
   async save() {
@@ -281,28 +416,105 @@ const Sections = {
       parentId: parentRaw === '' ? null : parseInt(parentRaw, 10)
     };
 
+    // Sub-form: optional section head. Only acted on if the full name is provided
+    // (or if there's an existing linked head being explicitly cleared).
+    const headFullName = (fd.get('sectionHeadFullName') || '').toString().trim();
+    const headDepartment = (fd.get('sectionHeadDepartment') || '').toString().trim();
+    const headPhone = (fd.get('sectionHeadPhone') || '').toString().trim();
+    const headEmail = (fd.get('sectionHeadEmail') || '').toString().trim();
+    const headHours = (fd.get('sectionHeadReceptionHours') || '').toString().trim();
+    const headPhoto = (fd.get('sectionHeadPhotoUrl') || '').toString().trim();
+    const existingHeadId = (fd.get('sectionHeadId') || '').toString().trim();
+
     btn.disabled = true;
     btnText.textContent = 'Saqlanmoqda...';
     btnSpinner.classList.remove('hidden');
 
     try {
+      let savedSectionId = id ? parseInt(id, 10) : null;
       if (id) {
-        await Api.updateSection(parseInt(id, 10), payload);
-        UI.toast('Bo\'lim yangilandi', 'success');
+        await Api.updateSection(savedSectionId, payload);
       } else {
-        await Api.createSection(payload);
-        UI.toast('Yangi bo\'lim qo\'shildi', 'success');
+        // Try to use the create response (most REST APIs return the created entity);
+        // if it doesn't carry an id, fall back to looking up by slug in the fresh list.
+        const created = await Api.createSection(payload);
+        if (created && typeof created.id === 'number') {
+          savedSectionId = created.id;
+        } else {
+          const fresh = await Api.listSections({ onlyActive: false });
+          const match = fresh.find(s => s.slug === payload.slug || s.title === payload.titleUz);
+          savedSectionId = match ? match.id : null;
+        }
       }
+
+      // Now reconcile the section head sub-form against this section.
+      if (savedSectionId != null) {
+        await this.persistHeadFor(savedSectionId, {
+          fullName: headFullName,
+          department: headDepartment,
+          phone: headPhone,
+          email: headEmail,
+          receptionHours: headHours,
+          photoUrl: headPhoto,
+          existingId: existingHeadId ? parseInt(existingHeadId, 10) : null
+        });
+      }
+
+      UI.toast(id ? 'Bo\'lim yangilandi' : 'Yangi bo\'lim qo\'shildi', 'success');
       this.closeModal();
       this.load();
       Contents.refreshSectionDropdown?.();
+      LabHeads?.load?.();
     } catch (err) {
-      errorBox.textContent = err.formatErrors();
+      errorBox.textContent = err.formatErrors ? err.formatErrors() : (err.message || 'Saqlab bo\'lmadi');
       errorBox.classList.remove('hidden');
     } finally {
       btn.disabled = false;
       btnText.textContent = 'Saqlash';
       btnSpinner.classList.add('hidden');
+    }
+  },
+
+  /**
+   * Reconcile the section's SectionHead record with what the sub-form contains:
+   *   - fullName empty + existingId  → delete the linked head
+   *   - fullName empty + no existing → no-op
+   *   - fullName set   + no existing → create
+   *   - fullName set   + existingId  → update
+   * Errors here are surfaced as toasts (the section itself is already saved).
+   * Note: the sub-form's "ReceptionHours" field maps to SectionHead.WorkingHours.
+   */
+  async persistHeadFor(sectionId, h) {
+    const hasFullName = !!h.fullName;
+    if (!hasFullName && !h.existingId) return;
+
+    if (!hasFullName && h.existingId) {
+      try {
+        await Api.deleteSectionHead(h.existingId);
+        UI.toast('Bo\'lim raxbari biriktirilishi olib tashlandi', 'info');
+      } catch (err) {
+        UI.toast('Raxbarni olib tashlab bo\'lmadi: ' + (err.message || ''), 'error');
+      }
+      return;
+    }
+
+    const payload = {
+      fullName: h.fullName,
+      phone: h.phone || null,
+      email: h.email || null,
+      workingHours: h.receptionHours || null,
+      photoUrl: h.photoUrl || null,
+      sectionId: sectionId,
+      sortOrder: 0,
+      isActive: true
+    };
+    try {
+      if (h.existingId) await Api.updateSectionHead(h.existingId, payload);
+      else await Api.createSectionHead(payload);
+      // Refresh the dedicated tab if it's currently mounted.
+      if (typeof SectionHeads !== 'undefined') SectionHeads.load?.();
+    } catch (err) {
+      UI.toast('Bo\'lim raxbarini saqlab bo\'lmadi: ' + (err.formatErrors ? err.formatErrors() : err.message), 'error');
     }
   },
 

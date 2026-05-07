@@ -204,7 +204,13 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
             </svg>
-            Bo'lim boshliqlari
+            Rahbariyat
+          </button>
+          <button data-tab="section-heads" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            Bo'lim raxbarlari
           </button>
         </nav>
 
@@ -393,7 +399,7 @@
             <div>
               <div class="flex items-center gap-2.5 mb-1">
                 <span class="tab-num-badge">3</span>
-                <h2 class="font-display text-3xl font-extrabold text-slate-900 dark:text-white">Bo'lim boshliqlari</h2>
+                <h2 class="font-display text-3xl font-extrabold text-slate-900 dark:text-white">Rahbariyat</h2>
               </div>
               <p class="text-sm text-slate-500 dark:text-slate-400 ml-11">Laboratoriya bo'limlari rahbariyati: ism, telefon, qabul vaqti, rasm</p>
             </div>
@@ -401,7 +407,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
               </svg>
-              Yangi boshliq qo'shish
+              Yangi rahbar qo'shish
             </button>
           </div>
 
@@ -410,7 +416,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-600 dark:text-brand-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <div class="text-sm text-slate-700 dark:text-slate-300">
               <strong class="text-slate-900 dark:text-white">Bu yerda nima qilasiz:</strong>
-              Saytdagi <strong>"Bo'lim boshliqlari"</strong> sahifasi uchun rahbariyat ma'lumotlarini qo'shasiz. Har bir boshliq — bitta karta: rasm, ism, telefon va qabul vaqti.
+              Saytdagi <strong>"Rahbariyat"</strong> sahifasi uchun umumiy rahbariyat ma'lumotlarini qo'shasiz. Bu yerga qo'shilgan rahbarlar — bo'limlardan mustaqil bo'lib, alohida sahifada chiqadi. Bo'lim boshlig'ini esa <strong>Bo'limlar</strong> tabidan, kerakli bo'limni tahrirlash modalidan biriktiring.
             </div>
           </div>
 
@@ -434,9 +440,147 @@
           </div>
         </div>
 
+        <!-- ====== SECTION HEADS TAB (Bo'lim raxbarlari) ====== -->
+        <div id="tab-section-heads" class="tab-panel hidden">
+          <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <h2 class="font-display text-3xl font-extrabold text-slate-900 dark:text-white">Bo'lim raxbarlari</h2>
+                <span class="px-2 py-0.5 text-xs font-bold uppercase tracking-wider bg-warm-100 text-warm-700 dark:bg-warm-700/30 dark:text-warm-300 rounded">Yangi</span>
+              </div>
+              <p class="text-sm text-slate-500 dark:text-slate-400">Har bir dinamik bo'limga 1 ta raxbar biriktirish — sayt sahifasi tepasida katta hero kartochka sifatida chiqadi.</p>
+            </div>
+            <button id="new-section-head-btn" class="inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-brand-600/30 hover:shadow-xl hover:shadow-brand-600/40 hover:-translate-y-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              Yangi raxbar qo'shish
+            </button>
+          </div>
+
+          <div class="mb-5 flex gap-3 p-4 bg-warm-50 dark:bg-warm-700/15 border border-warm-200 dark:border-warm-700/40 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-warm-600 dark:text-warm-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="text-sm text-slate-700 dark:text-slate-300">
+              <strong class="text-slate-900 dark:text-white">Eslatma:</strong>
+              Bu yerda qo'shilgan raxbarlar — <strong>Rahbariyat</strong> sahifasida ko'rinmaydi. Ular faqat tegishli bo'lim sahifasi tepasida chiqadi. Har bir bo'limga faqat 1 ta raxbar biriktirilishi mumkin.
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                <tr class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  <th class="px-4 py-3 w-20">Rasm</th>
+                  <th class="px-4 py-3">F.I.Sh</th>
+                  <th class="px-4 py-3 hidden md:table-cell">Bo'lim</th>
+                  <th class="px-4 py-3 hidden lg:table-cell">Telefon</th>
+                  <th class="px-4 py-3 hidden lg:table-cell">Email</th>
+                  <th class="px-4 py-3 hidden md:table-cell w-32">Holati</th>
+                  <th class="px-4 py-3 w-32 text-right">Amallar</th>
+                </tr>
+              </thead>
+              <tbody id="section-heads-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr><td colspan="7" class="px-4 py-12 text-center text-slate-400 dark:text-slate-500">Yuklanmoqda...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </main>
     </div>
   </section>
+
+  <!-- ===================== SECTION HEAD MODAL (Bo'lim raxbari) ===================== -->
+  <div id="section-head-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm">
+    <div class="min-h-screen flex items-start sm:items-center justify-center p-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl my-8">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h3 id="section-head-modal-title" class="text-lg font-semibold text-slate-900 dark:text-white">Yangi bo'lim raxbari</h3>
+          <button class="sh-modal-close p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="section-head-form" class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+          <input type="hidden" name="id" />
+
+          <!-- Photo upload -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Rasm <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+            <div class="flex items-start gap-4">
+              <div id="shm-photo-preview" class="w-28 h-28 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center text-slate-400 text-xs flex-shrink-0">
+                Rasm yo'q
+              </div>
+              <div class="flex-1 space-y-2">
+                <input type="file" id="shm-photo-input" accept="image/*" class="hidden" />
+                <button type="button" id="shm-photo-pick" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 dark:bg-brand-900/30 hover:bg-brand-100 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 text-sm font-medium rounded-lg border border-brand-200 dark:border-brand-800 transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  Rasm yuklash
+                </button>
+                <button type="button" id="shm-photo-remove" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-sm font-medium rounded-lg transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  Rasmni olib tashlash
+                </button>
+              </div>
+            </div>
+            <input type="hidden" name="photoUrl" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Bo'lim <span class="text-rose-500">*</span></label>
+            <select name="sectionId" required class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm bg-white">
+              <option value="">— Bo'lim tanlang —</option>
+            </select>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Faqat dinamik bo'limlar ko'rinadi. Har bir bo'limga 1 ta raxbar biriktirilishi mumkin.</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">F.I.Sh <span class="text-rose-500">*</span></label>
+            <input type="text" name="fullName" required maxlength="200" placeholder="Karimov Akbar Jamshidovich" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Telefon <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+            <input type="text" name="phone" maxlength="50" placeholder="+998 71 200 11 22" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+            <input type="email" name="email" maxlength="200" placeholder="raxbar@vetcenter.uz" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Ish vaqti <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+            <input type="text" name="workingHours" maxlength="200" placeholder="Du-Ju: 09:00 - 18:00" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Tartib raqami</label>
+              <input type="number" name="sortOrder" min="0" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+            </div>
+            <div class="flex items-start pt-1">
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="isActive" checked class="w-5 h-5 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-slate-600 dark:bg-slate-700" />
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Faol</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="section-head-form-error" class="hidden bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm rounded-lg px-3.5 py-2.5"></div>
+        </form>
+
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3">
+          <button type="button" class="sh-modal-close px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">Bekor qilish</button>
+          <button type="button" id="section-head-save-btn" class="px-4 py-2 text-sm bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow-sm shadow-brand-600/20 disabled:opacity-60 flex items-center gap-2">
+            <span class="save-btn-text">Saqlash</span>
+            <svg class="save-btn-spinner hidden animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ===================== SECTION MODAL ===================== -->
   <div id="section-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-sm">
@@ -482,6 +626,46 @@
 
           <!-- Sections are always active by default; toggle hidden from the simplified UI. -->
           <input type="hidden" name="isActive" value="on" />
+
+          <!-- Optional section head — when filled, creates/updates a lab-head linked to this section.
+               The head is rendered prominently at the top of the public section page. -->
+          <div class="border-t border-slate-200 dark:border-slate-800 pt-5">
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                Bo'lim boshlig'i
+                <span class="text-xs text-slate-400 dark:text-slate-500 font-normal">— ixtiyoriy</span>
+              </label>
+              <span id="sh-status-badge" class="hidden text-[11px] font-semibold px-2 py-0.5 rounded-full"></span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">F.I.Sh kiritilsa, ushbu bo'limga boshliq biriktiriladi va sayt sahifasida tepada katta qilib chiqadi. Bo'sh qoldirsangiz — hech narsa qo'shilmaydi.</p>
+
+            <input type="hidden" name="sectionHeadId" />
+            <input type="hidden" name="sectionHeadPhotoUrl" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="sm:col-span-1">
+                <div id="sh-photo-preview" class="aspect-square rounded-xl bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center text-xs text-slate-400 overflow-hidden">
+                  <span>Rasm yo'q</span>
+                </div>
+                <div class="flex gap-1 mt-2">
+                  <button type="button" id="sh-photo-pick" class="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-semibold bg-brand-50 hover:bg-brand-100 dark:bg-brand-900/30 dark:hover:bg-brand-900/50 text-brand-700 dark:text-brand-300 rounded-lg border border-brand-200 dark:border-brand-800 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    Rasm
+                  </button>
+                  <button type="button" id="sh-photo-remove" class="hidden px-2 py-1.5 text-xs bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/30 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 rounded-lg border border-rose-200 dark:border-rose-800 transition" title="Rasmni o'chirish">×</button>
+                </div>
+                <input type="file" id="sh-photo-input" accept="image/*" class="hidden" />
+              </div>
+              <div class="sm:col-span-2 space-y-2">
+                <input type="text" name="sectionHeadFullName" maxlength="200" placeholder="F.I.Sh — masalan: Sherzod Mehmovov" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+                <input type="text" name="sectionHeadDepartment" maxlength="200" placeholder="Lavozimi (ixtiyoriy)" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+                <input type="text" name="sectionHeadPhone" maxlength="50" placeholder="Telefon (ixtiyoriy) — masalan: +998 90 123 45 67" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+                <input type="email" name="sectionHeadEmail" maxlength="200" placeholder="Email (ixtiyoriy) — boshliq@vetcenter.uz" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+                <input type="text" name="sectionHeadReceptionHours" maxlength="100" placeholder="Qabul vaqti (ixtiyoriy) — masalan: Du-Ju 9:00-18:00" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+              </div>
+            </div>
+          </div>
 
           <div id="section-form-error" class="hidden bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-sm rounded-lg px-3.5 py-2.5"></div>
         </form>
@@ -616,7 +800,7 @@
     <div class="min-h-screen flex items-start sm:items-center justify-center p-4">
       <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl my-8">
         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-          <h3 id="lab-head-modal-title" class="text-lg font-semibold text-slate-900 dark:text-white">Yangi boshliq</h3>
+          <h3 id="lab-head-modal-title" class="text-lg font-semibold text-slate-900 dark:text-white">Yangi rahbar</h3>
           <button class="lh-close p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
@@ -653,20 +837,31 @@
             <input type="text" name="fullName" required maxlength="200" placeholder="Karimov Akbar Jamshidovich" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
           </div>
 
+          <!-- Section linkage is intentionally NOT exposed in this tab.
+               Top-level leaders managed here are always sectionId=null and only
+               appear on the public "Rahbariyat" page. To attach a head to a
+               specific section, use that section's edit modal instead. -->
+          <input type="hidden" name="sectionId" value="" />
+
           <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Bo'lim nomi <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
-            <input type="text" name="department" maxlength="200" placeholder="Masalan: Mikrobiologiya bo'limi" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Boshliq qaysi laboratoriya bo'limiga rahbarlik qiladi</p>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Lavozim <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+            <input type="text" name="department" maxlength="200" placeholder="Masalan: Direktor o'rinbosari" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Kartochkada ism ostida chiqadigan qisqa lavozim nomi.</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Telefon <span class="text-rose-500">*</span></label>
-            <input type="text" name="phone" required maxlength="50" placeholder="+998 71 200 11 22" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Telefon <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+            <input type="text" name="phone" maxlength="50" placeholder="+998 71 200 11 22" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Qabul vaqti <span class="text-rose-500">*</span></label>
-            <input type="text" name="receptionHours" required maxlength="200" placeholder="Du-Ju: 09:00 - 18:00" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+            <input type="email" name="email" maxlength="200" placeholder="rahbar@vetcenter.uz" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Qabul vaqti <span class="text-xs font-normal text-slate-400 dark:text-slate-500">— ixtiyoriy</span></label>
+            <input type="text" name="receptionHours" maxlength="200" placeholder="Du-Ju: 09:00 - 18:00" class="w-full px-3.5 py-2.5 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -842,7 +1037,8 @@
   <script src="/admin/js/sections.js?v=19"></script>
   <script src="/admin/js/contents.js?v=16"></script>
   <script src="/admin/js/media.js?v=16"></script>
-  <script src="/admin/js/lab-heads.js?v=18"></script>
-  <script src="/admin/js/app.js?v=17"></script>
+  <script src="/admin/js/lab-heads.js?v=20"></script>
+  <script src="/admin/js/section-heads.js?v=1"></script>
+  <script src="/admin/js/app.js?v=18"></script>
 </body>
 </html>
