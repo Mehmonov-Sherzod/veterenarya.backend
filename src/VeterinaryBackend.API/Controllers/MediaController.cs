@@ -53,6 +53,7 @@ public class MediaController : ControllerBase
     /// </summary>
     [HttpPost("upload")]
     [Authorize(Roles = AppRoles.Admin)]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("upload")]
     [Consumes("multipart/form-data")]
     [RequestFormLimits(MultipartBodyLengthLimit = 524_288_000)]
     [RequestSizeLimit(524_288_000)]

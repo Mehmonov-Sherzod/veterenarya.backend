@@ -9,6 +9,7 @@ const App = {
     Media.init();
     LabHeads.init();
     if (typeof SectionHeads !== 'undefined') SectionHeads.init();
+    if (typeof Bot !== 'undefined') Bot.init();
     this.bindThemeToggle();
 
     document.querySelectorAll('[data-tab]').forEach(b =>
@@ -78,6 +79,7 @@ const App = {
     if (tab === 'media') Media.load();
     if (tab === 'lab-heads') LabHeads.load();
     if (tab === 'section-heads' && typeof SectionHeads !== 'undefined') SectionHeads.load();
+    if (tab === 'bot' && typeof Bot !== 'undefined') Bot.load();
   }
 };
 

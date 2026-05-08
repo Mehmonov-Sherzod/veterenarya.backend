@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using VeterinaryBackend.API.Middleware;
 using VeterinaryBackend.Business.Common;
 using VeterinaryBackend.Business.DTOs.Auth;
@@ -23,6 +24,7 @@ public class AuthController : ControllerBase
     /// Login as the super admin. Returns a Bearer JWT used for admin endpoints.
     /// </summary>
     [HttpPost("login")]
+    [EnableRateLimiting("auth")]
     [ProducesResponseType(typeof(TokenResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<TokenResponseDto>> Login(

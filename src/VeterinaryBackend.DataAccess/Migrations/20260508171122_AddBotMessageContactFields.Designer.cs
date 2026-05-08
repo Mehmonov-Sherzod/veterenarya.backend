@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VeterinaryBackend.DataAccess.Context;
@@ -11,9 +12,11 @@ using VeterinaryBackend.DataAccess.Context;
 namespace VeterinaryBackend.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508171122_AddBotMessageContactFields")]
+    partial class AddBotMessageContactFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,11 +56,6 @@ namespace VeterinaryBackend.DataAccess.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
-                    b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasMaxLength(4000)
@@ -77,8 +75,6 @@ namespace VeterinaryBackend.DataAccess.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("IsRead");
-
-                    b.HasIndex("Status");
 
                     b.ToTable("bot_messages", (string)null);
                 });

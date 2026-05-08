@@ -1,13 +1,20 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using VeterinaryBackend.API.Middleware;
 using VeterinaryBackend.Business.Extensions;
 using VeterinaryBackend.Business.Options;
+using VeterinaryBackend.DataAccess.Context;
 using VeterinaryBackend.DataAccess.Extensions;
+using VeterinaryBackend.DataAccess.Repositories;
+using VeterinaryBackend.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -120,13 +127,122 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
 });
 
+// Bind config sections used by the CORS + database hardening below.
+builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection(CorsOptions.SectionName));
+builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection(DatabaseOptions.SectionName));
+
+var corsAllowed = builder.Configuration
+    .GetSection(CorsOptions.SectionName)
+    .Get<CorsOptions>()?.AllowedOrigins ?? Array.Empty<string>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+    {
+        if (corsAllowed.Length == 0)
+        {
+            // Dev / unconfigured — permissive. Production MUST set Cors:AllowedOrigins.
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        }
+        else
+        {
+            policy.WithOrigins(corsAllowed)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        }
+    });
+});
+
+// Rate limiting — protects login + media-upload from brute force / abuse.
+// All other endpoints fall back to the global "public" limiter applied to anonymous
+// requests by default (admin JWT-bearing requests bypass it via PartitionedRateLimiter).
+builder.Services.AddRateLimiter(opts =>
+{
+    opts.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    opts.AddPolicy("auth", ctx => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+
+    opts.AddPolicy("upload", ctx => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: ctx.User.Identity?.Name ?? ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+
+    opts.AddPolicy("public", ctx => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 200,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
 });
 
 var app = builder.Build();
+
+// Auto-migrate the database to the latest schema and seed the bootstrap super-admin
+// from AdminOptions when the users table is empty. Idempotent: safe to run on every
+// startup. If the DB is unreachable we log and continue so endpoints can still serve
+// readonly requests against existing infrastructure (admin will fail until DB is up).
+//
+// Multi-instance prod deploys should set Database:AutoMigrateOnStartup=false and
+// run `dotnet ef database update` as a one-shot pre-deploy step instead, to avoid
+// races between pods.
+using (var scope = app.Services.CreateScope())
+{
+    var sp = scope.ServiceProvider;
+    var logger = sp.GetRequiredService<ILogger<Program>>();
+    var dbOpts = sp.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+    try
+    {
+        var db = sp.GetRequiredService<AppDbContext>();
+        if (dbOpts.AutoMigrateOnStartup)
+        {
+            await db.Database.MigrateAsync();
+        }
+        else
+        {
+            logger.LogInformation("Database:AutoMigrateOnStartup=false — skipping migrations. Run them manually before promoting a new build.");
+        }
+
+        var users = sp.GetRequiredService<IUserRepository>();
+        if (!await users.AnyAsync())
+        {
+            var adminOpts = sp.GetRequiredService<IOptions<AdminOptions>>().Value;
+
+            var seedUsername = string.IsNullOrWhiteSpace(adminOpts.Username) ? "admin" : adminOpts.Username.Trim();
+            var seedHash = string.IsNullOrWhiteSpace(adminOpts.PasswordHash)
+                ? BCrypt.Net.BCrypt.HashPassword("Admin@123", workFactor: 11)
+                : adminOpts.PasswordHash;
+
+            await users.AddAsync(new User
+            {
+                Username = seedUsername,
+                PasswordHash = seedHash,
+                Role = "Admin",
+                IsActive = true
+            });
+            await db.SaveChangesAsync();
+
+            logger.LogInformation("Seeded super-admin user '{Username}' into the database.", seedUsername);
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database migration/seed failed at startup.");
+    }
+}
 
 var webRoot = app.Environment.WebRootPath;
 if (string.IsNullOrEmpty(webRoot))
@@ -136,8 +252,31 @@ if (string.IsNullOrEmpty(webRoot))
 }
 Directory.CreateDirectory(Path.Combine(webRoot, "uploads"));
 
+if (!app.Environment.IsDevelopment())
+{
+    // Tells browsers to upgrade subsequent visits to HTTPS for one year.
+    app.UseHsts();
+}
+
 app.UseMiddleware<ExceptionHandlerMiddleware>();
 app.UseMiddleware<LanguageMiddleware>();
+app.UseRateLimiter();
+
+// Lightweight liveness/readiness probes for load balancers + k8s.
+app.MapGet("/health", () => Results.Ok(new { status = "ok", time = DateTime.UtcNow }))
+    .AllowAnonymous();
+app.MapGet("/ready", async (AppDbContext db) =>
+{
+    try
+    {
+        await db.Database.CanConnectAsync();
+        return Results.Ok(new { status = "ready" });
+    }
+    catch
+    {
+        return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    }
+}).AllowAnonymous();
 
 if (app.Environment.IsDevelopment())
 {

@@ -13,6 +13,9 @@ public class AppDbContext : DbContext
     public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
     public DbSet<LabHead> LabHeads => Set<LabHead>();
     public DbSet<SectionHead> SectionHeads => Set<SectionHead>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<BotSubscriber> BotSubscribers => Set<BotSubscriber>();
+    public DbSet<BotMessage> BotMessages => Set<BotMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

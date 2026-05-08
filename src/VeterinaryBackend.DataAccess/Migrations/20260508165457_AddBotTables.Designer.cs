@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VeterinaryBackend.DataAccess.Context;
@@ -11,9 +12,11 @@ using VeterinaryBackend.DataAccess.Context;
 namespace VeterinaryBackend.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508165457_AddBotTables")]
+    partial class AddBotTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,10 +36,6 @@ namespace VeterinaryBackend.DataAccess.Migrations
                     b.Property<long>("ChatId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("ContactName")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -48,15 +47,6 @@ namespace VeterinaryBackend.DataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -77,8 +67,6 @@ namespace VeterinaryBackend.DataAccess.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("IsRead");
-
-                    b.HasIndex("Status");
 
                     b.ToTable("bot_messages", (string)null);
                 });

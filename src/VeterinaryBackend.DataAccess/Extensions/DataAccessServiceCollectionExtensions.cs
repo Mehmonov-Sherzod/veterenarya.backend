@@ -20,6 +20,9 @@ public static class DataAccessServiceCollectionExtensions
         services.AddScoped<IMediaFileRepository, MediaFileRepository>();
         services.AddScoped<ILabHeadRepository, LabHeadRepository>();
         services.AddScoped<ISectionHeadRepository, SectionHeadRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IBotSubscriberRepository, BotSubscriberRepository>();
+        services.AddScoped<IBotMessageRepository, BotMessageRepository>();
         services.AddScoped<UnitOfWorkNs.IUnitOfWork, UnitOfWorkNs.UnitOfWork>();
 
         return services;
