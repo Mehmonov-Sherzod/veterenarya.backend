@@ -23,6 +23,7 @@ public static class DataAccessServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IBotSubscriberRepository, BotSubscriberRepository>();
         services.AddScoped<IBotMessageRepository, BotMessageRepository>();
+        services.AddScoped<IBotChannelRepository, BotChannelRepository>();
         services.AddScoped<UnitOfWorkNs.IUnitOfWork, UnitOfWorkNs.UnitOfWork>();
 
         return services;

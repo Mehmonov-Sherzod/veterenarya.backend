@@ -47,10 +47,6 @@ public class TelegramBotService : ITelegramBotService
         if (!IsConfigured()) return;
 
         using var scope = _scopeFactory.CreateScope();
-        var subs = scope.ServiceProvider.GetRequiredService<IBotSubscriberRepository>();
-        var subscribers = await subs.GetActiveAsync(ct);
-        if (subscribers.Count == 0) return;
-
         var text = BuildBroadcastText(contentId, title, excerpt);
 
         // Try to resolve the local image bytes once. Telegram can't reach
@@ -75,7 +71,26 @@ public class TelegramBotService : ITelegramBotService
             _logger.LogWarning(ex, "Failed to load image {ImageUrl} for broadcast; sending text only.", imageUrl);
         }
 
-        foreach (var subscriber in subscribers)
+        // Per-subscriber broadcast intentionally disabled — content is published
+        // ONLY to the channels where the bot is admin (auto-discovered via
+        // MyChatMember + the optional TargetChannelId fallback). Subscribers
+        // still get the per-conversation auto-replies and admin messages, but
+        // not the post feed.
+
+        // Channel cross-post: union of (auto-discovered admin channels) + the
+        // optional TargetChannelId fallback in config. Failures are logged per
+        // channel — a missing-permission channel doesn't block the others.
+        var channelTargets = new List<string>();
+        var channelRepo = scope.ServiceProvider.GetRequiredService<IBotChannelRepository>();
+        var autoChannels = await channelRepo.GetActiveAsync(ct);
+        foreach (var c in autoChannels) channelTargets.Add(c.ChatId.ToString());
+        if (!string.IsNullOrWhiteSpace(_options.TargetChannelId) &&
+            !channelTargets.Contains(_options.TargetChannelId))
+        {
+            channelTargets.Add(_options.TargetChannelId);
+        }
+
+        foreach (var channelId in channelTargets)
         {
             try
             {
@@ -83,7 +98,7 @@ public class TelegramBotService : ITelegramBotService
                 {
                     using var ms = new MemoryStream(imageBytes, writable: false);
                     await _bot!.SendPhoto(
-                        chatId: subscriber.ChatId,
+                        chatId: channelId,
                         photo: InputFile.FromStream(ms, imageFileName ?? "photo.jpg"),
                         caption: text,
                         parseMode: Telegram.Bot.Types.Enums.ParseMode.Html,
@@ -92,24 +107,16 @@ public class TelegramBotService : ITelegramBotService
                 else
                 {
                     await _bot!.SendMessage(
-                        chatId: subscriber.ChatId,
+                        chatId: channelId,
                         text: text,
                         parseMode: Telegram.Bot.Types.Enums.ParseMode.Html,
                         cancellationToken: ct);
                 }
-            }
-            catch (Telegram.Bot.Exceptions.ApiRequestException ex)
-                when (ex.ErrorCode == 403 /* user blocked the bot */ || ex.ErrorCode == 400)
-            {
-                // User blocked the bot or chat no longer exists; mark inactive so we stop spamming.
-                subscriber.IsActive = false;
-                subs.Update(subscriber);
-                await scope.ServiceProvider.GetRequiredService<IUnitOfWork>().SaveChangesAsync(ct);
-                _logger.LogInformation("Marked chat {ChatId} inactive: {Reason}", subscriber.ChatId, ex.Message);
+                _logger.LogInformation("Cross-posted content {ContentId} to channel {ChannelId}.", contentId, channelId);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to send broadcast to chat {ChatId}.", subscriber.ChatId);
+                _logger.LogWarning(ex, "Failed to cross-post content {ContentId} to channel {ChannelId}. Make sure the bot is an admin with Post permission.", contentId, channelId);
             }
         }
     }

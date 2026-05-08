@@ -32,3 +32,14 @@ public class BotMessageRepository : Repository<BotMessage>, IBotMessageRepositor
     public Task<int> CountUnreadAsync(CancellationToken ct = default)
         => DbSet.CountAsync(x => !x.IsRead, ct);
 }
+
+public class BotChannelRepository : Repository<BotChannel>, IBotChannelRepository
+{
+    public BotChannelRepository(AppDbContext context) : base(context) { }
+
+    public Task<BotChannel?> GetByChatIdAsync(long chatId, CancellationToken ct = default)
+        => DbSet.FirstOrDefaultAsync(x => x.ChatId == chatId, ct);
+
+    public async Task<IReadOnlyList<BotChannel>> GetActiveAsync(CancellationToken ct = default)
+        => await DbSet.AsNoTracking().Where(x => x.IsActive).ToListAsync(ct);
+}

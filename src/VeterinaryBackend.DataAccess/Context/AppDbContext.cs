@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<BotSubscriber> BotSubscribers => Set<BotSubscriber>();
     public DbSet<BotMessage> BotMessages => Set<BotMessage>();
+    public DbSet<BotChannel> BotChannels => Set<BotChannel>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

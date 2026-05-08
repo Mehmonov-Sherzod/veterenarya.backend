@@ -14,3 +14,9 @@ public interface IBotMessageRepository : IRepository<BotMessage>
     Task<IReadOnlyList<BotMessage>> GetAllAsync(bool onlyUnread, int take, CancellationToken ct = default);
     Task<int> CountUnreadAsync(CancellationToken ct = default);
 }
+
+public interface IBotChannelRepository : IRepository<BotChannel>
+{
+    Task<BotChannel?> GetByChatIdAsync(long chatId, CancellationToken ct = default);
+    Task<IReadOnlyList<BotChannel>> GetActiveAsync(CancellationToken ct = default);
+}

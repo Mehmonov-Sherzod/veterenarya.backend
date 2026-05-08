@@ -28,7 +28,6 @@ namespace VeterinaryBackend.Business.Services;
 public class TelegramBotHostedService : BackgroundService
 {
     private const string BtnRequest = "📩 So'rov yuborish";
-    private const string BtnPosts = "📰 Barcha postlar";
     private const string BtnShareContact = "📱 Kontaktni ulashish";
     private const string BtnCancel = "❌ Bekor qilish";
 
@@ -45,7 +44,7 @@ public class TelegramBotHostedService : BackgroundService
 
     private static readonly ReplyKeyboardMarkup MainMenu = new(new[]
     {
-        new[] { new KeyboardButton(BtnRequest), new KeyboardButton(BtnPosts) }
+        new[] { new KeyboardButton(BtnRequest) }
     })
     { ResizeKeyboard = true };
 
@@ -98,7 +97,10 @@ public class TelegramBotHostedService : BackgroundService
             return;
         }
 
-        var receiverOptions = new ReceiverOptions { AllowedUpdates = new[] { UpdateType.Message } };
+        var receiverOptions = new ReceiverOptions
+        {
+            AllowedUpdates = new[] { UpdateType.Message, UpdateType.MyChatMember }
+        };
 
         _bot.StartReceiving(
             updateHandler: HandleUpdateAsync,
@@ -112,6 +114,14 @@ public class TelegramBotHostedService : BackgroundService
 
     private async Task HandleUpdateAsync(ITelegramBotClient client, Update update, CancellationToken ct)
     {
+        // Auto-discover channels: when the bot is promoted/demoted in a channel
+        // or supergroup, Telegram delivers a MyChatMember update we listen to.
+        if (update.MyChatMember is { } cm)
+        {
+            await HandleMyChatMemberAsync(cm, ct);
+            return;
+        }
+
         if (update.Message is not { } msg) return;
         // Allow contact updates without text; for everything else we need text.
         if (msg.Contact is null && string.IsNullOrEmpty(msg.Text)) return;
@@ -121,7 +131,6 @@ public class TelegramBotHostedService : BackgroundService
             using var scope = _scopeFactory.CreateScope();
             var subsRepo = scope.ServiceProvider.GetRequiredService<IBotSubscriberRepository>();
             var msgRepo = scope.ServiceProvider.GetRequiredService<IBotMessageRepository>();
-            var contentRepo = scope.ServiceProvider.GetRequiredService<IContentRepository>();
             var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
             var chatId = msg.Chat.Id;
@@ -144,20 +153,10 @@ public class TelegramBotHostedService : BackgroundService
                 await client.SendMessage(
                     chatId,
                     "Assalomu alaykum! Veterinariya markazi botiga xush kelibsiz.\n\n" +
-                    "📩 <b>So'rov yuborish</b> — savol yoki murojaatingizni qoldiring.\n" +
-                    "📰 <b>Barcha postlar</b> — eng so'nggi yangiliklarni ko'rish.\n\n" +
-                    "Yangi yangiliklar paydo bo'lganda bot avtomatik xabar beradi.",
+                    "📩 <b>So'rov yuborish</b> tugmasini bosib savol yoki murojaatingizni qoldiring. Admin tez orada javob beradi.",
                     parseMode: ParseMode.Html,
                     replyMarkup: MainMenu,
                     cancellationToken: ct);
-                return;
-            }
-
-            if (text == BtnPosts)
-            {
-                _conversations.TryRemove(chatId, out _);
-                await uow.SaveChangesAsync(ct);
-                await SendLatestPostsAsync(client, contentRepo, chatId, ct);
                 return;
             }
 
@@ -250,6 +249,62 @@ public class TelegramBotHostedService : BackgroundService
         }
     }
 
+    private async Task HandleMyChatMemberAsync(ChatMemberUpdated cm, CancellationToken ct)
+    {
+        // Only care about channels and supergroups — group/private bot promotions
+        // don't broadcast there.
+        if (cm.Chat.Type != ChatType.Channel && cm.Chat.Type != ChatType.Supergroup) return;
+
+        var newStatus = cm.NewChatMember.Status;
+        var becameAdmin = newStatus == ChatMemberStatus.Administrator || newStatus == ChatMemberStatus.Creator;
+        var lostAccess = newStatus == ChatMemberStatus.Left || newStatus == ChatMemberStatus.Kicked
+                         || newStatus == ChatMemberStatus.Restricted || newStatus == ChatMemberStatus.Member;
+
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var channels = scope.ServiceProvider.GetRequiredService<IBotChannelRepository>();
+            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+            var existing = await channels.GetByChatIdAsync(cm.Chat.Id, ct);
+
+            if (becameAdmin)
+            {
+                if (existing is null)
+                {
+                    await channels.AddAsync(new BotChannel
+                    {
+                        ChatId = cm.Chat.Id,
+                        Title = cm.Chat.Title,
+                        Username = cm.Chat.Username,
+                        IsActive = true
+                    }, ct);
+                    _logger.LogInformation("Bot promoted to admin in channel {ChatId} ({Title}).", cm.Chat.Id, cm.Chat.Title);
+                }
+                else
+                {
+                    existing.IsActive = true;
+                    existing.Title = cm.Chat.Title;
+                    existing.Username = cm.Chat.Username;
+                    channels.Update(existing);
+                    _logger.LogInformation("Re-activated channel {ChatId} ({Title}).", cm.Chat.Id, cm.Chat.Title);
+                }
+            }
+            else if (lostAccess && existing is not null)
+            {
+                existing.IsActive = false;
+                channels.Update(existing);
+                _logger.LogInformation("Bot demoted/removed from channel {ChatId} — disabling cross-post.", cm.Chat.Id);
+            }
+
+            await uow.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to process MyChatMember update for chat {ChatId}.", cm.Chat.Id);
+        }
+    }
+
     private async Task EnsureSubscriberAsync(IBotSubscriberRepository subs, Message msg, CancellationToken ct)
     {
         var existing = await subs.GetByChatIdAsync(msg.Chat.Id, ct);
@@ -269,87 +324,6 @@ public class TelegramBotHostedService : BackgroundService
             existing.IsActive = true;
             subs.Update(existing);
         }
-    }
-
-    private async Task SendLatestPostsAsync(ITelegramBotClient client, IContentRepository contents, long chatId, CancellationToken ct)
-    {
-        var paged = await contents.GetPagedWithSectionAsync(page: 1, pageSize: 10, sectionId: null, onlyActive: true, ct);
-        if (paged.Items.Count == 0)
-        {
-            await client.SendMessage(chatId, "Hozircha postlar yo'q.", replyMarkup: MainMenu, cancellationToken: ct);
-            return;
-        }
-
-        await client.SendMessage(chatId, $"📰 <b>So'nggi {paged.Items.Count} ta post:</b>", parseMode: ParseMode.Html, cancellationToken: ct);
-
-        var frontend = (_siteOptions.FrontendUrl ?? string.Empty).TrimEnd('/');
-        foreach (var c in paged.Items)
-        {
-            var title = !string.IsNullOrWhiteSpace(c.TitleUz) ? c.TitleUz : c.TitleRu;
-            var excerpt = ExtractPlainText(!string.IsNullOrWhiteSpace(c.DescriptionUz) ? c.DescriptionUz : c.DescriptionRu);
-            var caption = $"📰 <b>{System.Net.WebUtility.HtmlEncode(title)}</b>";
-            if (!string.IsNullOrWhiteSpace(excerpt))
-            {
-                var trimmed = excerpt.Length > 700 ? excerpt[..700] + "…" : excerpt;
-                caption += "\n\n" + System.Net.WebUtility.HtmlEncode(trimmed);
-            }
-
-            // HTML hyperlink anchored on the bold "Bizning sahifa" — appears as an
-            // underlined blue link in every Telegram client (desktop, web, mobile).
-            // Tappable on localhost-dev (desktop only) and production (everywhere).
-            if (!string.IsNullOrWhiteSpace(frontend))
-            {
-                var url = $"{frontend}/content.html?id={c.Id}";
-                caption += $"\n\n👉 <a href=\"{url}\"><b>Davlat markazi sahifasi</b></a>";
-            }
-            InlineKeyboardMarkup? keyboard = null;
-
-            try
-            {
-                var bytes = TryReadLocalImage(c.ImageUrl);
-                if (bytes is not null)
-                {
-                    using var ms = new MemoryStream(bytes, writable: false);
-                    await client.SendPhoto(chatId, InputFile.FromStream(ms, "photo.jpg"), caption: caption, parseMode: ParseMode.Html, replyMarkup: keyboard, cancellationToken: ct);
-                }
-                else
-                {
-                    await client.SendMessage(chatId, caption, parseMode: ParseMode.Html, replyMarkup: keyboard, cancellationToken: ct);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to send post {ContentId} to chat {ChatId}.", c.Id, chatId);
-            }
-        }
-
-        await client.SendMessage(chatId, "Asosiy menyu:", replyMarkup: MainMenu, cancellationToken: ct);
-    }
-
-    private byte[]? TryReadLocalImage(string? imageUrl)
-    {
-        if (string.IsNullOrWhiteSpace(imageUrl) || !imageUrl.StartsWith("/")) return null;
-        try
-        {
-            var rel = imageUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
-            var localPath = Path.Combine(_env.WebRootPath ?? string.Empty, rel);
-            return System.IO.File.Exists(localPath) ? System.IO.File.ReadAllBytes(localPath) : null;
-        }
-        catch { return null; }
-    }
-
-    private static string? ExtractPlainText(string? raw)
-    {
-        if (string.IsNullOrWhiteSpace(raw)) return null;
-        if (raw.StartsWith("__VS_BLOCKS_V1__", StringComparison.Ordinal))
-        {
-            var match = System.Text.RegularExpressions.Regex.Match(
-                raw, "\"t\"\\s*:\\s*\"text\"\\s*,\\s*\"v\"\\s*:\\s*\"([^\"]+)\"");
-            raw = match.Success ? System.Text.RegularExpressions.Regex.Unescape(match.Groups[1].Value) : raw;
-        }
-        raw = System.Text.RegularExpressions.Regex.Replace(raw, "<[^>]+>", " ");
-        raw = System.Text.RegularExpressions.Regex.Replace(raw, "\\s+", " ").Trim();
-        return raw;
     }
 
     private Task HandlePollingErrorAsync(ITelegramBotClient client, Exception ex, CancellationToken ct)
